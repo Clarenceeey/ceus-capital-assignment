@@ -1,20 +1,154 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model country {
+  iso_code         String  @id
+  name            String
+  postal_code_regex String
+  postal_code_label String
+  is_postal_code_required Boolean
 
-    @@index([name])
+  administrativeDivisions administrative_division[]
+  addresses address[]
+}
+
+model administrative_division {
+  id       Int     @id @default(autoincrement())
+  country  country @relation(fields: [country_iso], references: [iso_code])
+  country_iso String
+  parent_id Int?
+  type      String
+  name      String
+  iso_code  String?
+  local_name String?
+
+  addresses address[]
+  @@unique([country_iso, parent_id, name], name: "admin_division_unique")
+}
+
+model address {
+  id                 Int     @id @default(autoincrement())
+  country            country @relation(fields: [country_iso], references: [iso_code])
+  country_iso        String
+
+  administrative_division_id  Int?  // ✅ This is the actual foreign key column in the database
+  administrative_division administrative_division? @relation(fields: [administrative_division_id], references: [id])  // ✅ This is the relation
+
+  building_number    String
+  street_name        String
+  unit_number        String?
+  postal_code        String
+  full_address       String
+  geolocation       Unsupported("geography(Point, 4326)")
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  business          business[]
+  services          service[]  // ✅ Fix: This creates the reverse relation
+}
+
+model business {
+  id                  Int      @id @default(autoincrement())
+  name                String   @unique
+  description         String
+  contact_email       String
+  google_place_id     String?
+  facebook_page_id    String?
+  facebook_page_link  String?
+  instagram_page_link String?
+  whatsapp_link       String?
+  average_rating      Float    @default(0)
+  ai_review           String?
+  slug               String?  // ✅ Add this field
+
+  address_id Int
+  address    address @relation(fields: [address_id], references: [id])
+
+  services        service[]
+  businessHours   business_hours[]
+}
+
+model business_hours {
+  id          Int      @id @default(autoincrement())
+  business    business @relation(fields: [business_id], references: [id])
+  business_id Int
+  day_name    String
+  open_time   DateTime?
+  close_time  DateTime?
+}
+
+model service {
+  id          Int      @id @default(autoincrement())
+  business    business @relation(fields: [business_id], references: [id])
+  business_id Int
+
+  address_id  Int?
+  address     address? @relation(fields: [address_id], references: [id])  // ✅ Ensure address relation exists
+
+  name        String
+  description String
+
+  // Category (Tuition, etc.)
+  category_id Int?
+  category    category? @relation(fields: [category_id], references: [id])
+
+  // ✅ Many-to-Many: Service has multiple tags
+  service_tag service_tag[]
+
+  // ✅ One-to-Many: Service has multiple images
+  service_image service_image[]
+
+  // ✅ One-to-One or One-to-Many: Service pricing
+  pricing service_pricing?  // Change to `ServicePricing[]` if a service can have multiple pricing variants
+}
+
+model category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  services service[]
+}
+
+model tag {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  serviceTags service_tag[]
+}
+
+model service_tag {
+  service_id Int
+  tag_id     Int
+
+  service service @relation(fields: [service_id], references: [id])
+  tag     tag     @relation(fields: [tag_id], references: [id])
+
+  @@id([service_id, tag_id]) // Composite primary key for Many-to-Many relation
+}
+
+model service_pricing {
+  id           Int     @id @default(autoincrement())
+  service_id   Int     @unique
+  service      service @relation(fields: [service_id], references: [id])
+
+  price        Decimal
+  currency     String  @default("SGD")
+  pricing_unit String  @default("hour")
+  variant_name String  @default("Standard Rate")
+}
+
+model service_image {
+  id          Int     @id @default(autoincrement())
+  service_id  Int
+  service     service @relation(fields: [service_id], references: [id])
+
+  url_path      String
+  display_order Int? 
+  is_main       Boolean? 
 }
