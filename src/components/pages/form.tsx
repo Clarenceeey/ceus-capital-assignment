@@ -1,19 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
+"use client";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { Form } from "~/components/ui/form";
+import { Separator } from "~/components/ui/separator";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "~/components/ui/form";
-import { Textarea } from "~/components/ui/textarea";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "~/components/ui/pagination";
+import BusinessInformationSection from "./formSections/businessInformation";
 
 // ✅ Define Form Schema Using Zod
 const formSchema = z.object({
@@ -29,9 +30,6 @@ const formSchema = z.object({
       /^ChIJ[a-zA-Z0-9_-]{23,251}$/,
       "Please provide a valid Google Place ID",
     ),
-  facebookPageId: z
-    .string()
-    .regex(/^\d{8,20}$/, "Please provide a valid Facebook Page ID"),
   facebookPageLink: z
     .string()
     .regex(
@@ -61,16 +59,16 @@ export default function ContactForm({
 }: {
   submitForm: () => void;
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const [step, setStep] = useState(1); // ✅ Track current step
+  const totalSteps = 4; // ✅ Total number of form pages
+
   const form = useForm<z.infer<typeof formSchema>>({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     resolver: zodResolver(formSchema),
     defaultValues: {
       businessName: "",
       businessDescription: "",
       contactEmail: "",
       googlePlaceId: "",
-      facebookPageId: "",
       facebookPageLink: "",
       instagramPageLink: "",
       whatsappLink: "",
@@ -84,166 +82,63 @@ export default function ContactForm({
   };
 
   return (
-    <div className="mx-auto w-7/12 rounded-lg border p-4 shadow-md">
-      <h2 className="mb-4 text-xl font-bold">Contact Us</h2>
-
+    <div className="mx-auto w-7/12 rounded-lg border p-6 shadow-md">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Name Field */}
-          <div className="flex flex-row gap-4">
-            <FormField
-              control={form.control}
-              name="businessName"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your name"
-                      autoComplete="off"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="contactEmail"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      autoComplete="off"
-                      placeholder="Enter your email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          {/* Email Field */}
-          {/* Message Field */}
-          <FormField
-            control={form.control}
-            name="businessDescription"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Message</FormLabel>
-                <FormControl>
-                  <Textarea
-                    autoComplete="off"
-                    placeholder="Tell us a more about your business!"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* ✅ Step 1: Business Information */}
+          {step === 1 && (
+            <>
+              <BusinessInformationSection control={form.control} />
+            </>
+          )}
 
-          <FormField
-            control={form.control}
-            name="googlePlaceId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Google Place ID</FormLabel>
-                <FormControl>
-                  <Input autoComplete="off" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* ✅ Step 2: Contact Information */}
+          {step === 2 && (
+            <>
+              <p className="mb-4 text-xl font-bold">Business Address</p>
+            </>
+          )}
 
-          <div className="flex flex-row gap-4">
-            <FormField
-              control={form.control}
-              name="facebookPageId"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormLabel>Facebook Page ID</FormLabel>
-                  <FormControl>
-                    <Input autoComplete="off" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          {/* ✅ Step 3: Social Media */}
+          {step === 3 && <></>}
 
-            <FormField
-              control={form.control}
-              name="facebookPageLink"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormLabel>Facebook Page Link</FormLabel>
-                  <FormControl>
-                    <Input autoComplete="off" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          {/* ✅ Step 4: Final Step */}
+          {step === 4 && <></>}
 
-          <FormField
-            control={form.control}
-            name="instagramPageLink"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Instagram Page Link</FormLabel>
-                <FormControl>
-                  <Input autoComplete="off" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Separator />
 
-          <FormField
-            control={form.control}
-            name="whatsappLink"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Whatsapp Link</FormLabel>
-                <FormControl>
-                  <Input autoComplete="off" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Pagination>
+            <PaginationContent className="gap-10">
+              <PaginationItem>
+                <PaginationPrevious
+                  className={`select-none ${step == 1 ? "pointer-events-none opacity-50" : undefined}`}
+                  onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLink
+                  className="pointer-events-none select-none"
+                  aria-disabled
+                >
+                  {step} of {totalSteps}
+                </PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  className={`select-none ${step == totalSteps ? "pointer-events-none opacity-50" : undefined}`}
+                  onClick={() =>
+                    setStep((prev) => Math.min(prev + 1, totalSteps))
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
 
-          <FormField
-            control={form.control}
-            name="rating"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rating</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="5"
-                    step="0.1"
-                    autoComplete="off"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Submit Button */}
-          <Button type="submit" className="w-full">
-            Submit
-          </Button>
+          {step === totalSteps && (
+            <Button type="submit" className="select-none">
+              Submit
+            </Button>
+          )}
         </form>
       </Form>
     </div>
