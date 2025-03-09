@@ -15,9 +15,10 @@ import {
   PaginationNext,
 } from "~/components/ui/pagination";
 import BusinessInformationSection from "./formSections/businessInformation";
+import BusinessAddressSection from "./formSections/businessAddress";
 
 // ✅ Define Form Schema Using Zod
-const formSchema = z.object({
+const businessInformationSchema = z.object({
   businessName: z.string().min(1, "Please provide a business name!"),
   businessDescription: z
     .string()
@@ -54,6 +55,28 @@ const formSchema = z.object({
     .max(5.0, "Rating must be between 0.0 and 5.0!"),
 });
 
+export const businessAddressSchema = z.object({
+  buildingNumber: z.string().min(1, "Building name/number is required"),
+  streetName: z.string().min(1, "Street name is required"),
+  unitNumber: z.string().optional(),
+  postalCode: z.coerce
+    .number()
+    .int("Postal code must be a whole number") // Ensure it's an integer
+    .min(10000, "Postal code must be at least 5 digits") // Adjust min length (e.g., 10000)
+    .max(9999999999, "Postal code must be at most 10 digits"), // Adjust max length (e.g., 9999999999)
+  fullAddress: z.string().optional(),
+  latitude: z
+    .number()
+    .min(-90, "Latitude must be between -90 and 90")
+    .max(90, "Latitude must be between -90 and 90"),
+  longitude: z
+    .number()
+    .min(-180, "Longitude must be between -180 and 180")
+    .max(180, "Longitude must be between -180 and 180"),
+});
+
+const formSchema = businessInformationSchema.merge(businessAddressSchema);
+
 export default function ContactForm({
   submitForm,
 }: {
@@ -73,6 +96,13 @@ export default function ContactForm({
       instagramPageLink: "",
       whatsappLink: "",
       rating: 0,
+      buildingNumber: "",
+      streetName: "",
+      unitNumber: "",
+      postalCode: 0,
+      fullAddress: "",
+      latitude: 0,
+      longitude: 0,
     },
   });
 
@@ -95,7 +125,7 @@ export default function ContactForm({
           {/* ✅ Step 2: Contact Information */}
           {step === 2 && (
             <>
-              <p className="mb-4 text-xl font-bold">Business Address</p>
+              <BusinessAddressSection control={form.control} />
             </>
           )}
 
