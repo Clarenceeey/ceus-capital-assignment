@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "~/server/db";
+import { getFacebookPageId } from "~/app/utils/getFacebookLink";
 
 // 🛠 Define Zod validation schema
 const formSchema = z.object({
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
     }
 
     const data = validationResult.data; // Validated form data
+    data.facebookPageId = (await getFacebookPageId(data.facebookPageLink))!;
 
     // ✅ Save to database (if using Prisma)
     const newEntry = await db.business.create({
