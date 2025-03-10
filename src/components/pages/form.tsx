@@ -34,19 +34,42 @@ export default function ContactForm({
 }: {
   submitForm: () => void;
 }) {
-  const onSubmit = async () => {
-    const isValid = await form.trigger(); // ✅ Trigger validation
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      console.log("Submitting Form Data:", data);
 
-    if (isValid) {
-      console.log("Form Data:", form.getValues()); // ✅ Get all form values
-      submitForm(); // ✅ Call submitForm if valid
-    } else {
-      console.log("Validation failed:", form.formState.errors); // ❌ Show validation errors
+      const response = await fetch("/api/form", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("Error submitting form:", result.error);
+        alert("Form submission failed: " + result.error);
+        return;
+      }
+
+      console.log("Form submitted successfully:", result);
+      alert("Form submitted successfully!");
+
+      submitForm();
+    } catch (error) {
+      console.error("Network error:", error);
+      alert("An error occurred while submitting the form.");
     }
   };
 
-  const [step, setStep] = useState(1); // ✅ Track current step
-  const totalSteps = 4; // ✅ Total number of form pages
+  const onError = (errors: unknown) => {
+    console.log("Validation Errors:", errors);
+  };
+
+  const [step, setStep] = useState(1);
+  const totalSteps = 4;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,39 +99,37 @@ export default function ContactForm({
         variantName: "Standard Rate",
       },
       tags: {
-        level: undefined, // Required
-        subject: undefined, // Required
-        stream: undefined, // Required
-        classSize: undefined, // Required
-        modeOfDelivery: undefined, // Required
+        level: undefined,
+        subject: undefined,
+        stream: undefined,
+        classSize: undefined,
+        modeOfDelivery: undefined,
       },
     },
   });
 
-  const onSubmitForm = async (data: z.infer<typeof formSchema>) => {
-    console.log("Form Data:", data);
-    submitForm();
-  };
-
   return (
     <div className="mx-auto w-7/12 rounded-lg border p-6 shadow-md">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-4">
-          {/* ✅ Step 1: Business Information */}
+        <form
+          onSubmit={form.handleSubmit(onSubmit, onError)}
+          className="space-y-4"
+        >
+          {/* Business Information */}
           {step === 1 && (
             <>
               <BusinessInformationSection control={form.control} />
             </>
           )}
 
-          {/* ✅ Step 2: Contact Information */}
+          {/* Business Address */}
           {step === 2 && (
             <>
               <BusinessAddressSection control={form.control} />
             </>
           )}
 
-          {/* ✅ Step 3: Social Media */}
+          {/* Business Hours */}
           {step === 3 && (
             <>
               <BusinessHoursSection
@@ -119,10 +140,14 @@ export default function ContactForm({
             </>
           )}
 
-          {/* ✅ Step 4: Final Step */}
+          {/* Service Offerings */}
           {step === 4 && (
             <>
-              <ServiceOfferingsSection control={form.control} />
+              <ServiceOfferingsSection
+                control={form.control}
+                setValue={form.setValue}
+                watch={form.watch}
+              />
             </>
           )}
 
@@ -156,11 +181,7 @@ export default function ContactForm({
           </Pagination>
 
           {step === totalSteps && (
-            <Button
-              type="submit"
-              className="select-none"
-              onClick={() => onSubmit()}
-            >
+            <Button type="submit" className="select-none">
               Submit
             </Button>
           )}
