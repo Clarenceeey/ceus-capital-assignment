@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 function parseTimeToMinutes(timeStr: string): number {
+  if (!timeStr) throw new Error("Invalid time format: time string is missing");
   const [hh, mm] = timeStr.split(":");
-  return parseInt(hh, 10) * 60 + parseInt(mm, 10);
+  return parseInt(hh ?? "", 10) * 60 + parseInt(mm ?? "", 10);
 }
 
 // ✅ Define Schema for Business Hours
