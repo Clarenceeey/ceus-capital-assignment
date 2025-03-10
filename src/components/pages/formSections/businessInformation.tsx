@@ -20,6 +20,8 @@ export default function BusinessInformationSection({
   return (
     <div>
       <p className="mb-4 text-xl font-bold">Business Information</p>
+
+      {/* Business Name */}
       <FormField
         control={control}
         name="businessName"
@@ -38,6 +40,7 @@ export default function BusinessInformationSection({
         )}
       />
 
+      {/* Business Description */}
       <FormField
         control={control}
         name="businessDescription"
@@ -56,6 +59,7 @@ export default function BusinessInformationSection({
         )}
       />
 
+      {/* Contact Email */}
       <FormField
         control={control}
         name="contactEmail"
@@ -75,6 +79,7 @@ export default function BusinessInformationSection({
         )}
       />
 
+      {/* Google Place Id */}
       <FormField
         control={control}
         name="googlePlaceId"
@@ -89,6 +94,7 @@ export default function BusinessInformationSection({
         )}
       />
 
+      {/* Facebook Page Link, Facebook Page Id can be derived from this */}
       <FormField
         control={control}
         name="facebookPageLink"
@@ -103,6 +109,7 @@ export default function BusinessInformationSection({
         )}
       />
 
+      {/* Instagram PAge Link */}
       <FormField
         control={control}
         name="instagramPageLink"
@@ -117,6 +124,7 @@ export default function BusinessInformationSection({
         )}
       />
 
+      {/* Whatsapp Link */}
       <FormField
         control={control}
         name="whatsappLink"
@@ -131,6 +139,7 @@ export default function BusinessInformationSection({
         )}
       />
 
+      {/* Rating */}
       <FormField
         control={control}
         name="rating"

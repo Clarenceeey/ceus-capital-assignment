@@ -116,11 +116,6 @@ export default function BusinessHoursSection({
                             : field.value.filter((d) => d !== day);
 
                           setValue(`timeSlots.${index}.days`, updatedDays);
-
-                          console.log(
-                            "Updated Time Slots:",
-                            watch("timeSlots"),
-                          );
                         }}
                       />
                     </FormControl>
@@ -138,7 +133,6 @@ export default function BusinessHoursSection({
               variant="destructive"
               className="mt-2"
               onClick={() => {
-                console.log(field);
                 const daysToRemove = watch(`timeSlots.${index}.days`);
                 setSelected((prevSelected) =>
                   prevSelected.filter((d) => !daysToRemove.includes(d)),

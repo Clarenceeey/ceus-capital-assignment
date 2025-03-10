@@ -21,6 +21,7 @@ export default function BusinessAddressSection({
     <div>
       <p className="mb-4 text-xl font-bold">Business Address</p>
 
+      {/* Building Number */}
       <FormField
         control={control}
         name="buildingNumber"
@@ -35,6 +36,7 @@ export default function BusinessAddressSection({
         )}
       />
 
+      {/* Street Name */}
       <FormField
         control={control}
         name="streetName"
@@ -49,6 +51,7 @@ export default function BusinessAddressSection({
         )}
       />
 
+      {/* Unit Number */}
       <FormField
         control={control}
         name="unitNumber"
@@ -63,6 +66,7 @@ export default function BusinessAddressSection({
         )}
       />
 
+      {/* Postal Code */}
       <FormField
         control={control}
         name="postalCode"
@@ -77,6 +81,7 @@ export default function BusinessAddressSection({
         )}
       />
 
+      {/* Full Address */}
       <FormField
         control={control}
         name="fullAddress"
@@ -95,6 +100,7 @@ export default function BusinessAddressSection({
         )}
       />
 
+      {/* Longitude */}
       <FormField
         control={control}
         name="longitude"
@@ -116,6 +122,7 @@ export default function BusinessAddressSection({
         )}
       />
 
+      {/* Latitude */}
       <FormField
         control={control}
         name="latitude"
