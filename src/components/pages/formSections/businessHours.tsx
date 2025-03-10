@@ -50,7 +50,6 @@ export default function BusinessHoursSection({
 
   const selectedDays = watch("timeSlots").flatMap((slot: any) => slot.days);
   const remainingDays = daysOfWeek.filter((day) => !selectedDays.includes(day));
-  console.log(`remaining days: ${remainingDays}`);
   return (
     <div>
       <h2 className="mb-4 text-xl font-bold">Business Hours</h2>
