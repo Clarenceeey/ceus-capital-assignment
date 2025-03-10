@@ -212,7 +212,10 @@ function DropdownSelect({
               {options.map((option) => (
                 <DropdownMenuItem
                   key={option}
-                  onClick={() => field.onChange(option)}
+                  onClick={() => {
+                    field.onChange(option);
+                    console.log(field);
+                  }}
                 >
                   {option}
                 </DropdownMenuItem>

@@ -34,6 +34,17 @@ export default function ContactForm({
 }: {
   submitForm: () => void;
 }) {
+  const onSubmit = async () => {
+    const isValid = await form.trigger(); // ✅ Trigger validation
+
+    if (isValid) {
+      console.log("Form Data:", form.getValues()); // ✅ Get all form values
+      submitForm(); // ✅ Call submitForm if valid
+    } else {
+      console.log("Validation failed:", form.formState.errors); // ❌ Show validation errors
+    }
+  };
+
   const [step, setStep] = useState(1); // ✅ Track current step
   const totalSteps = 4; // ✅ Total number of form pages
 
@@ -64,10 +75,17 @@ export default function ContactForm({
         pricingUnit: "hour",
         variantName: "Standard Rate",
       },
+      tags: {
+        level: undefined, // Required
+        subject: undefined, // Required
+        stream: undefined, // Required
+        classSize: undefined, // Required
+        modeOfDelivery: undefined, // Required
+      },
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmitForm = async (data: z.infer<typeof formSchema>) => {
     console.log("Form Data:", data);
     submitForm();
   };
@@ -75,7 +93,7 @@ export default function ContactForm({
   return (
     <div className="mx-auto w-7/12 rounded-lg border p-6 shadow-md">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-4">
           {/* ✅ Step 1: Business Information */}
           {step === 1 && (
             <>
@@ -138,7 +156,11 @@ export default function ContactForm({
           </Pagination>
 
           {step === totalSteps && (
-            <Button type="submit" className="select-none">
+            <Button
+              type="submit"
+              className="select-none"
+              onClick={() => onSubmit()}
+            >
               Submit
             </Button>
           )}
