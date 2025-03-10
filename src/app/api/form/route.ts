@@ -1,54 +1,20 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { db } from "~/server/db";
 import { getFacebookPageId } from "~/app/utils/getFacebookLink";
+import { businessInformationSchema } from "~/app/utils/businessInformationSchema";
+import { businessAddressSchema } from "~/app/utils/businessAddressSchema";
+import { businessHoursSchema } from "~/app/utils/businessHoursSchema";
+import { serviceOfferingsSchema } from "~/app/utils/serviceOfferingsSchema";
 
-// 🛠 Define Zod validation schema
-const formSchema = z.object({
-  businessName: z.string().min(1, "Please provide a business name!"),
-  businessDescription: z
-    .string()
-    .min(1, "Please provide a business description!")
-    .max(500, "Message must be at most 500 words"),
-  contactEmail: z.string().email("Please provide a valid email"),
-  googlePlaceId: z
-    .string()
-    .regex(
-      /^ChIJ[a-zA-Z0-9_-]{23,251}$/,
-      "Please provide a valid Google Place ID",
-    ),
-  facebookPageId: z
-    .string()
-    .regex(/^\d{8,20}$/, "Please provide a valid Facebook Page ID"),
-  facebookPageLink: z
-    .string()
-    .regex(
-      /^https?:\/\/(www\.)?facebook\.com\/[a-zA-Z0-9.]{3,}$/,
-      "Please provide a valid Facebook Page Link",
-    ),
-  instagramPageLink: z
-    .string()
-    .regex(
-      /^https?:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._]{1,30}\/?$/,
-      "Please provide a valid Instagram Page Link",
-    ),
-  whatsappLink: z
-    .string()
-    .regex(
-      /^https?:\/\/api\.whatsapp\.com\/send\?phone=\d{7,15}(&text=.*)?$/,
-      "Please provide a valid WhatsApp Link",
-    ),
-  rating: z.coerce
-    .number()
-    .min(0.0, "Rating must be between 0.0 and 5.0!")
-    .max(5.0, "Rating must be between 0.0 and 5.0!"),
-});
+const formSchema = businessInformationSchema
+  .merge(businessAddressSchema)
+  .merge(businessHoursSchema)
+  .merge(serviceOfferingsSchema);
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json(); // Parse JSON body
+    const body = await req.json();
 
-    // ✅ Validate input using Zod
     const validationResult = formSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
@@ -57,26 +23,118 @@ export async function POST(req: Request) {
       );
     }
 
-    const data = validationResult.data; // Validated form data
-    data.facebookPageId = (await getFacebookPageId(data.facebookPageLink))!;
+    const data = validationResult.data;
 
-    // ✅ Save to database (if using Prisma)
-    const newEntry = await db.business.create({
-      data: {
-        name: data.businessName,
-        description: data.businessDescription,
-        contact_email: data.contactEmail,
-        google_place_id: data.googlePlaceId,
-        facebook_page_id: data.facebookPageId,
-        facebook_page_link: data.facebookPageLink,
-        instagram_page_link: data.instagramPageLink,
-        whatsapp_link: data.whatsappLink,
-        average_rating: data.rating,
-      },
+    const facebookPageId = await getFacebookPageId(data.facebookPageLink);
+
+    const newBusiness = await db.$transaction(async (tx) => {
+      const [address] = await tx.$queryRaw<{ id: number }[]>`
+        INSERT INTO "address" (
+          "country_iso",
+          "administrative_division_id",
+          "building_number",
+          "street_name",
+          "unit_number",
+          "postal_code",
+          "full_address",
+          "geolocation",
+          "created_at",
+          "updated_at"
+        ) VALUES (
+          'SG',
+          ${null}, 
+          ${data.buildingNumber},
+          ${data.streetName},
+          ${data.unitNumber || null},
+          ${data.postalCode.toString()},
+          ${data.fullAddress},
+          ST_SetSRID(ST_MakePoint(${data.longitude}, ${data.latitude}), 4326)::geography,
+          NOW(),
+          NOW()
+        ) RETURNING "id";
+      `;
+
+      const business = await tx.business.create({
+        data: {
+          name: data.businessName,
+          description: data.businessDescription,
+          contact_email: data.contactEmail,
+          google_place_id: data.googlePlaceId,
+          facebook_page_id: facebookPageId || null,
+          facebook_page_link: data.facebookPageLink,
+          instagram_page_link: data.instagramPageLink,
+          whatsapp_link: data.whatsappLink,
+          average_rating: data.rating,
+          address_id: address.id,
+        },
+      });
+
+      await Promise.all(
+        data.timeSlots.map((slot) =>
+          tx.business_hours.create({
+            data: {
+              business_id: business.id,
+              day_name: slot.days.join(","),
+              open_time: new Date(`1970-01-01T${slot.openingTime}:00Z`),
+              close_time: new Date(`1970-01-01T${slot.closingTime}:00Z`),
+            },
+          }),
+        ),
+      );
+
+      const service = await tx.service.create({
+        data: {
+          business_id: business.id,
+          name: data.serviceName,
+          description: data.serviceDescription,
+        },
+      });
+
+      await tx.service_pricing.create({
+        data: {
+          service_id: service.id,
+          price: data.pricing.price,
+          currency: data.pricing.currency,
+          pricing_unit: data.pricing.pricingUnit,
+          variant_name: data.pricing.variantName,
+        },
+      });
+
+      const tagCategories = [
+        "level",
+        "subject",
+        "stream",
+        "classSize",
+        "modeOfDelivery",
+      ];
+
+      for (const category of tagCategories) {
+        const tagName = data.tags[category];
+        if (tagName) {
+          let tag = await tx.tag.findUnique({
+            where: { name: tagName },
+          });
+
+          if (!tag) {
+            tag = await tx.tag.create({
+              data: { name: tagName },
+            });
+          }
+
+          await tx.service_tag.create({
+            data: {
+              service_id: service.id,
+              tag_id: tag.id,
+            },
+          });
+        }
+      }
+
+      return business;
     });
 
     return NextResponse.json(
-      { success: true, data: newEntry },
+      { success: true, data: newBusiness },
       { status: 201 },
     );
   } catch (error) {
