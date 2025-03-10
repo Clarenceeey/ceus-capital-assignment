@@ -20,9 +20,13 @@ import { businessAddressSchema } from "~/app/utils/businessAddressSchema";
 import { businessHoursSchema } from "~/app/utils/businessHoursSchema";
 import { businessInformationSchema } from "~/app/utils/businessInformationSchema";
 import BusinessHoursSection from "./formSections/businessHours";
+import ServiceOfferingsSection from "./formSections/serviceOfferings";
+import { serviceOfferingsSchema } from "~/app/utils/serviceOfferingsSchema";
 
 const formSchema = businessInformationSchema.merge(
-  businessAddressSchema.merge(businessHoursSchema),
+  businessAddressSchema.merge(
+    businessHoursSchema.merge(serviceOfferingsSchema),
+  ),
 );
 
 export default function ContactForm({
@@ -52,6 +56,14 @@ export default function ContactForm({
       latitude: 0,
       longitude: 0,
       timeSlots: [{ openingTime: "", closingTime: "", days: [] }],
+      serviceName: "",
+      serviceDescription: "",
+      pricing: {
+        price: 0,
+        currency: "SGD",
+        pricingUnit: "hour",
+        variantName: "Standard Rate",
+      },
     },
   });
 
