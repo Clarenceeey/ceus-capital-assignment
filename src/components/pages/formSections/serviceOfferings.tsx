@@ -1,4 +1,4 @@
-import { Control } from "react-hook-form";
+import { Control, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { Input } from "~/components/ui/input";
 import {
   FormField,
@@ -18,6 +18,10 @@ import {
 // Define Props Type
 type ServiceOfferingsProps = {
   control: Control<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setValue: UseFormSetValue<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  watch: UseFormWatch<any>;
 };
 
 // List of available options
@@ -48,6 +52,8 @@ const deliveryModeTags = ["Onsite", "Online", "Hybrid"] as const;
 
 export default function ServiceOfferingsSection({
   control,
+  setValue,
+  watch,
 }: ServiceOfferingsProps) {
   return (
     <div>
@@ -73,6 +79,7 @@ export default function ServiceOfferingsSection({
           )}
         />
 
+        {/* Service Description */}
         <FormField
           control={control}
           name="serviceDescription"
@@ -100,6 +107,8 @@ export default function ServiceOfferingsSection({
             label="Level"
             options={levelTags}
             className="flex-1"
+            setValue={setValue}
+            watch={watch}
           />
 
           {/* Subject Selection */}
@@ -109,6 +118,8 @@ export default function ServiceOfferingsSection({
             label="Subject"
             options={subjectTags}
             className="flex-1"
+            setValue={setValue}
+            watch={watch}
           />
         </div>
 
@@ -120,6 +131,8 @@ export default function ServiceOfferingsSection({
             label="Stream"
             options={streamTags}
             className="flex-1"
+            setValue={setValue}
+            watch={watch}
           />
 
           {/* Class Size Selection */}
@@ -129,15 +142,19 @@ export default function ServiceOfferingsSection({
             label="Class Size"
             options={classSizeTags}
             className="flex-1"
+            setValue={setValue}
+            watch={watch}
           />
         </div>
 
         {/* Mode of Delivery Selection */}
         <DropdownSelect
           control={control}
-          name="deliveryMode"
+          name="modeOfDelivery"
           label="Mode of Delivery"
           options={deliveryModeTags}
+          setValue={setValue}
+          watch={watch}
         />
       </div>
 
@@ -181,24 +198,27 @@ export default function ServiceOfferingsSection({
   );
 }
 
-/** ✅ Reusable DropdownSelect Component */
 function DropdownSelect({
   control,
   name,
   label,
   options,
   className,
+  setValue,
+  watch,
 }: {
   control: Control<any>;
   name: string;
   label: string;
   options: readonly string[];
   className?: string;
+  setValue: UseFormSetValue<any>;
+  watch: UseFormWatch<any>;
 }) {
   return (
     <FormField
       control={control}
-      name={name}
+      name={`tags.${name}`}
       render={({ field }) => (
         <FormItem className={`mb-4 ${className}`}>
           <FormLabel>{label}</FormLabel>
@@ -213,8 +233,7 @@ function DropdownSelect({
                 <DropdownMenuItem
                   key={option}
                   onClick={() => {
-                    field.onChange(option);
-                    console.log(field);
+                    setValue(`tags.${name}`, option);
                   }}
                 >
                   {option}
