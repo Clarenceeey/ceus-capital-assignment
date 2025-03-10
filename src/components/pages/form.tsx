@@ -102,7 +102,11 @@ export default function ContactForm({
           )}
 
           {/* ✅ Step 4: Final Step */}
-          {step === 4 && <></>}
+          {step === 4 && (
+            <>
+              <ServiceOfferingsSection control={form.control} />
+            </>
+          )}
 
           <Separator />
 
