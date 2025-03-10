@@ -113,7 +113,7 @@ export default function BusinessHoursSection({
 
                           const updatedDays = checked
                             ? [...field.value, day]
-                            : field.value.filter((d) => d !== day);
+                            : field.value.filter((d: string) => d !== day);
 
                           setValue(`timeSlots.${index}.days`, updatedDays);
                         }}
