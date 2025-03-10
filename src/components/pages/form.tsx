@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Form } from "~/components/ui/form";
 import { Separator } from "~/components/ui/separator";
@@ -49,7 +49,7 @@ export default function ContactForm({
       const result = await response.json();
 
       if (!response.ok) {
-        console.error("Error submitting form:", result.error);
+        console.error("Error submitting form:", result.error ?? "");
         alert("Form submission failed: " + result.error);
         return;
       }

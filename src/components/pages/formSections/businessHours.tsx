@@ -1,11 +1,7 @@
-import {
-  Control,
-  UseFormSetValue,
-  useFieldArray,
-  UseFormWatch,
-} from "react-hook-form";
+import type { Control, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
 import { Input } from "~/components/ui/input";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
   FormField,
@@ -48,13 +44,21 @@ export default function BusinessHoursSection({
     name: "timeSlots",
   });
 
-  const selectedDays = watch("timeSlots").flatMap((slot: any) => slot.days);
+  type TimeSlot = {
+    openingTime: string;
+    closingTime: string;
+    days: string[];
+  };
+
+  const selectedDays = (watch("timeSlots") as TimeSlot[]).flatMap(
+    (slot) => slot.days ?? [],
+  );
   const remainingDays = daysOfWeek.filter((day) => !selectedDays.includes(day));
   return (
     <div>
       <h2 className="mb-4 text-xl font-bold">Business Hours</h2>
 
-      {fields.map((field, index) => (
+      {fields.map((field, index: number) => (
         <div key={field.id} className="rounded-lg border p-4">
           <div className="flex gap-4">
             {/* Opening Time */}

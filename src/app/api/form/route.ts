@@ -46,7 +46,7 @@ export async function POST(req: Request) {
           ${null}, 
           ${data.buildingNumber},
           ${data.streetName},
-          ${data.unitNumber || null},
+          ${data.unitNumber ?? null},
           ${data.postalCode.toString()},
           ${data.fullAddress},
           ST_SetSRID(ST_MakePoint(${data.longitude}, ${data.latitude}), 4326)::geography,
@@ -61,13 +61,13 @@ export async function POST(req: Request) {
           description: data.businessDescription,
           contact_email: data.contactEmail,
           google_place_id: data.googlePlaceId,
-          facebook_page_id: facebookPageId || null,
+          facebook_page_id: facebookPageId ?? null,
           facebook_page_link: data.facebookPageLink,
           instagram_page_link: data.instagramPageLink,
           whatsapp_link: data.whatsappLink,
           average_rating: data.rating,
           // might not be safe to assume that the first address is the one we just created
-          address_id: address?.id || 1,
+          address_id: address?.id ?? 1,
         },
       });
 
