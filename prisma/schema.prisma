@@ -37,20 +37,20 @@ model address {
   country            country @relation(fields: [country_iso], references: [iso_code])
   country_iso        String
 
-  administrative_division_id  Int?  // ✅ This is the actual foreign key column in the database
-  administrative_division administrative_division? @relation(fields: [administrative_division_id], references: [id])  // ✅ This is the relation
+  administrative_division_id  Int?  
+  administrative_division administrative_division? @relation(fields: [administrative_division_id], references: [id]) 
 
   building_number    String
   street_name        String
   unit_number        String?
   postal_code        String
   full_address       String
-  geolocation       Unsupported("geography(Point, 4326)")
+  geolocation       Unsupported("geography(Point, 4326)")?
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 
   business          business[]
-  services          service[]  // ✅ Fix: This creates the reverse relation
+  services          service[]  
 }
 
 model business {
@@ -65,7 +65,7 @@ model business {
   whatsapp_link       String?
   average_rating      Float    @default(0)
   ai_review           String?
-  slug               String?  // ✅ Add this field
+  slug               String?  
 
   address_id Int
   address    address @relation(fields: [address_id], references: [id])
@@ -89,23 +89,19 @@ model service {
   business_id Int
 
   address_id  Int?
-  address     address? @relation(fields: [address_id], references: [id])  // ✅ Ensure address relation exists
+  address     address? @relation(fields: [address_id], references: [id])  
 
   name        String
   description String
 
-  // Category (Tuition, etc.)
   category_id Int?
   category    category? @relation(fields: [category_id], references: [id])
 
-  // ✅ Many-to-Many: Service has multiple tags
   service_tag service_tag[]
 
-  // ✅ One-to-Many: Service has multiple images
   service_image service_image[]
 
-  // ✅ One-to-One or One-to-Many: Service pricing
-  pricing service_pricing?  // Change to `ServicePricing[]` if a service can have multiple pricing variants
+  pricing service_pricing?  
 }
 
 model category {
@@ -129,7 +125,7 @@ model service_tag {
   service service @relation(fields: [service_id], references: [id])
   tag     tag     @relation(fields: [tag_id], references: [id])
 
-  @@id([service_id, tag_id]) // Composite primary key for Many-to-Many relation
+  @@id([service_id, tag_id]) 
 }
 
 model service_pricing {
