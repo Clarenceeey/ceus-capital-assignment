@@ -5,6 +5,7 @@ import { businessInformationSchema } from "~/app/utils/businessInformationSchema
 import { businessAddressSchema } from "~/app/utils/businessAddressSchema";
 import { businessHoursSchema } from "~/app/utils/businessHoursSchema";
 import { serviceOfferingsSchema } from "~/app/utils/serviceOfferingsSchema";
+import { tagCategories } from "~/app/utils/categories";
 
 const formSchema = businessInformationSchema
   .merge(businessAddressSchema)
@@ -65,7 +66,8 @@ export async function POST(req: Request) {
           instagram_page_link: data.instagramPageLink,
           whatsapp_link: data.whatsappLink,
           average_rating: data.rating,
-          address_id: address.id,
+          // might not be safe to assume that the first address is the one we just created
+          address_id: address?.id || 1,
         },
       });
 
@@ -100,16 +102,11 @@ export async function POST(req: Request) {
         },
       });
 
-      const tagCategories = [
-        "level",
-        "subject",
-        "stream",
-        "classSize",
-        "modeOfDelivery",
-      ];
-
       for (const category of tagCategories) {
-        const tagName = data.tags[category];
+        if (category in data.tags == false) {
+          throw Error("Missing tag category: " + category);
+        }
+        const tagName = data.tags[category as keyof typeof data.tags];
         if (tagName) {
           let tag = await tx.tag.findUnique({
             where: { name: tagName },
