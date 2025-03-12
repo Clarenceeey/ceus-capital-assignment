@@ -10,11 +10,11 @@ export const businessAddressSchema = z.object({
     .min(10000, "Postal code must be at least 5 digits") // Adjust min length (e.g., 10000)
     .max(9999999999, "Postal code must be at most 10 digits"), // Adjust max length (e.g., 9999999999)
   fullAddress: z.string().optional(),
-  latitude: z
+  latitude: z.coerce
     .number()
     .min(-90, "Latitude must be between -90 and 90")
     .max(90, "Latitude must be between -90 and 90"),
-  longitude: z
+  longitude: z.coerce
     .number()
     .min(-180, "Longitude must be between -180 and 180")
     .max(180, "Longitude must be between -180 and 180"),

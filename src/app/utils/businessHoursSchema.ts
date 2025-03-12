@@ -14,9 +14,11 @@ export const businessHoursSchema = z.object({
         .object({
           openingTime: z
             .string()
+            .min(1, "Opening time is required") // Prevents empty string
             .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format"),
           closingTime: z
             .string()
+            .min(1, "Closing time is required") // Prevents empty string
             .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format"),
           days: z
             .array(
@@ -34,10 +36,12 @@ export const businessHoursSchema = z.object({
         })
         .refine(
           ({ openingTime, closingTime }) =>
+            openingTime !== "" &&
+            closingTime !== "" && // Ensure values exist
             parseTimeToMinutes(closingTime) > parseTimeToMinutes(openingTime),
           {
             message: "Closing time must be after opening time",
-            path: ["closingTime"], // which field to show error on
+            path: ["closingTime"], // Display error on `closingTime`
           },
         ),
     )

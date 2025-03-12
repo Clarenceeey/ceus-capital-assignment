@@ -11,7 +11,7 @@ export const serviceOfferingsSchema = z.object({
   serviceName: z.string().min(1, "Service name is required"),
   serviceDescription: z.string().min(1, "Service description is required"),
   pricing: z.object({
-    price: z.number().min(0, "Price must be at least 0"),
+    price: z.coerce.number().min(0, "Price must be at least 0"),
     currency: z.string().default("SGD"),
     pricingUnit: z.string().default("hour"),
     variantName: z.string().default("Standard Rate"),
