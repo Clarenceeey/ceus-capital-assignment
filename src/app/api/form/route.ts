@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "~/server/db";
-import { getFacebookPageId } from "~/app/utils/getFacebookLink";
 import { businessInformationSchema } from "~/app/utils/businessInformationSchema";
 import { businessAddressSchema } from "~/app/utils/businessAddressSchema";
 import { businessHoursSchema } from "~/app/utils/businessHoursSchema";
@@ -25,8 +24,6 @@ export async function POST(req: Request) {
     }
 
     const data = validationResult.data;
-
-    const facebookPageId = await getFacebookPageId(data.facebookPageLink);
 
     const newBusiness = await db.$transaction(async (tx) => {
       const [address] = await tx.$queryRaw<{ id: number }[]>`
@@ -61,7 +58,7 @@ export async function POST(req: Request) {
           description: data.businessDescription,
           contact_email: data.contactEmail,
           google_place_id: data.googlePlaceId,
-          facebook_page_id: facebookPageId ?? null,
+          facebook_page_id: data.facebookPageId,
           facebook_page_link: data.facebookPageLink,
           instagram_page_link: data.instagramPageLink,
           whatsapp_link: data.whatsappLink,

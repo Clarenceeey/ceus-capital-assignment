@@ -109,6 +109,20 @@ export default function BusinessInformationSection({
         )}
       />
 
+      <FormField
+        control={control}
+        name="facebookPageId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Facebook Page Id</FormLabel>
+            <FormControl>
+              <Input autoComplete="off" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       {/* Instagram PAge Link */}
       <FormField
         control={control}

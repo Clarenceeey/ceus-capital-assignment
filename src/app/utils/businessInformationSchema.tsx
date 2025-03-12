@@ -19,6 +19,9 @@ export const businessInformationSchema = z.object({
       /^https?:\/\/(www\.)?facebook\.com\/[a-zA-Z0-9.]{3,}$/,
       "Please provide a valid Facebook Page Link",
     ),
+  facebookPageId: z
+    .string()
+    .regex(/^\d{8,20}$/, "Please provide a valid Facebook Page ID"),
   instagramPageLink: z
     .string()
     .regex(
