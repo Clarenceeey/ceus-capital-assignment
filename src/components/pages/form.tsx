@@ -23,6 +23,16 @@ import BusinessHoursSection from "./formSections/businessHours";
 import ServiceOfferingsSection from "./formSections/serviceOfferings";
 import { serviceOfferingsSchema } from "~/app/utils/serviceOfferingsSchema";
 
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+
 const formSchema = businessInformationSchema.merge(
   businessAddressSchema.merge(
     businessHoursSchema.merge(serviceOfferingsSchema),
@@ -34,6 +44,8 @@ export default function ContactForm({
 }: {
   submitForm: () => void;
 }) {
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
       console.log("Submitting Form Data:", data);
@@ -50,17 +62,17 @@ export default function ContactForm({
 
       if (!response.ok) {
         console.error("Error submitting form:", result.error ?? "");
-        alert("Form submission failed: " + result.error);
+        setShowAlert(() => true);
+        setAlertMessage(() => "Form submission failed: " + result.error);
         return;
       }
 
       console.log("Form submitted successfully:", result);
-      alert("Form submitted successfully!");
-
       submitForm();
     } catch (error) {
+      setShowAlert(() => true);
+      setAlertMessage(() => "An error occurred while submitting the form.");
       console.error("Network error:", error);
-      alert("An error occurred while submitting the form.");
     }
   };
 
@@ -109,84 +121,100 @@ export default function ContactForm({
   });
 
   return (
-    <div className="mx-auto w-7/12 rounded-lg border p-6 shadow-md">
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit, onError)}
-          className="space-y-4"
-        >
-          {/* Business Information */}
-          {step === 1 && (
-            <>
-              <BusinessInformationSection control={form.control} />
-            </>
-          )}
-
-          {/* Business Address */}
-          {step === 2 && (
-            <>
-              <BusinessAddressSection control={form.control} />
-            </>
-          )}
-
-          {/* Business Hours */}
-          {step === 3 && (
-            <>
-              <BusinessHoursSection
-                control={form.control}
-                setValue={form.setValue}
-                watch={form.watch}
-              />
-            </>
-          )}
-
-          {/* Service Offerings */}
-          {step === 4 && (
-            <>
-              <ServiceOfferingsSection
-                control={form.control}
-                setValue={form.setValue}
-                watch={form.watch}
-              />
-            </>
-          )}
-
-          <Separator />
-
-          <Pagination>
-            <PaginationContent className="gap-10">
-              <PaginationItem>
-                <PaginationPrevious
-                  className={`select-none ${step == 1 ? "pointer-events-none opacity-50" : undefined}`}
-                  onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink
-                  className="pointer-events-none select-none"
-                  aria-disabled
-                >
-                  {step} of {totalSteps}
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext
-                  className={`select-none ${step == totalSteps ? "pointer-events-none opacity-50" : undefined}`}
-                  onClick={() =>
-                    setStep((prev) => Math.min(prev + 1, totalSteps))
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-
-          {step === totalSteps && (
-            <Button type="submit" className="select-none">
-              Submit
+    <div className="w-full">
+      <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error Submitting Form</AlertDialogTitle>
+            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="destructive" onClick={() => setShowAlert(false)}>
+              Close
             </Button>
-          )}
-        </form>
-      </Form>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <div className="mx-auto w-7/12 rounded-lg border p-6 shadow-md">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit, onError)}
+            className="space-y-4"
+          >
+            {/* Business Information */}
+            {step === 1 && (
+              <>
+                <BusinessInformationSection control={form.control} />
+              </>
+            )}
+
+            {/* Business Address */}
+            {step === 2 && (
+              <>
+                <BusinessAddressSection control={form.control} />
+              </>
+            )}
+
+            {/* Business Hours */}
+            {step === 3 && (
+              <>
+                <BusinessHoursSection
+                  control={form.control}
+                  setValue={form.setValue}
+                  watch={form.watch}
+                />
+              </>
+            )}
+
+            {/* Service Offerings */}
+            {step === 4 && (
+              <>
+                <ServiceOfferingsSection
+                  control={form.control}
+                  setValue={form.setValue}
+                  watch={form.watch}
+                />
+              </>
+            )}
+
+            <Separator />
+
+            <Pagination>
+              <PaginationContent className="gap-10">
+                <PaginationItem>
+                  <PaginationPrevious
+                    className={`select-none ${step == 1 ? "pointer-events-none opacity-50" : undefined}`}
+                    onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink
+                    className="pointer-events-none select-none"
+                    aria-disabled
+                  >
+                    {step} of {totalSteps}
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext
+                    className={`select-none ${step == totalSteps ? "pointer-events-none opacity-50" : undefined}`}
+                    onClick={() =>
+                      setStep((prev) => Math.min(prev + 1, totalSteps))
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+
+            {step === totalSteps && (
+              <Button type="submit" className="select-none">
+                Submit
+              </Button>
+            )}
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }

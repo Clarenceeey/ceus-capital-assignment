@@ -60,7 +60,7 @@ export default function ServiceOfferingsSection({
       <h2 className="mb-4 text-xl font-bold">Service Offerings</h2>
 
       {/* Service Name & Description */}
-      <div className="flex w-full flex-row gap-8">
+      <div className="mb-5 flex w-full flex-row gap-8">
         <FormField
           control={control}
           name="serviceName"
